@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Travis Japan 相性診断</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#fff7fb,#f4f7ff);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;color:#403943}
+.wrap{max-width:720px;margin:auto;padding:24px 15px 50px}
+.card{background:#fff;border-radius:26px;padding:22px;box-shadow:0 10px 35px #5d3b5214}
+h1{text-align:center;font-size:27px;margin:4px 0 5px}.lead{text-align:center;color:#897d88;font-size:13px;line-height:1.7}
+.startbox{text-align:center;padding:25px 8px}.heart{font-size:52px}
+button{border:0;border-radius:999px;background:#df9fbd;color:#fff;font-weight:800;font-size:16px;padding:14px 24px;cursor:pointer;box-shadow:0 6px 16px #c67e9d33}
+.small{font-size:11px;color:#998e98}.hidden{display:none!important}
+.progress{height:8px;background:#eee8ed;border-radius:99px;margin:18px 0 20px;overflow:hidden}.bar{height:100%;width:0;background:#df9fbd;transition:.3s}
+.qno{text-align:center;color:#b17d98;font-weight:800;font-size:13px}.q{text-align:center;font-size:21px;line-height:1.45;margin:8px 0 20px;font-weight:900}
+.answers{display:grid;gap:10px}.ans{padding:15px 16px;border:2px solid #eee5eb;background:#fff;border-radius:17px;text-align:left;font-size:15px;line-height:1.45}.ans:hover{border-color:#df9fbd;background:#fff8fb}
+.result-head{text-align:center}.result-head .emoji{font-size:44px}.result-head h2{font-size:25px;margin:5px 0}.percent{font-size:42px;font-weight:900;color:#ce82a6}
+.member{background:#fff8fb;border-radius:20px;padding:15px;margin:16px 0;text-align:center}.member img{width:150px;height:150px;object-fit:cover;border-radius:50%;background:#eee}.member .name{font-size:23px;font-weight:900;margin-top:8px}.desc{font-size:14px;line-height:1.75;text-align:left;margin-top:12px}
+.scores{display:grid;gap:9px;margin-top:18px}.score{display:grid;grid-template-columns:92px 1fr 45px;align-items:center;gap:8px;font-size:12px}.track{height:10px;background:#eee7ec;border-radius:99px;overflow:hidden}.fill{height:100%;background:#df9fbd;border-radius:99px}
+.all{margin-top:22px}.all h3{text-align:center}.row{display:flex;align-items:center;gap:8px;margin:8px 0;font-size:13px}.row .nm{width:80px}.row .track{flex:1}.actions{text-align:center;margin-top:20px}
+.disclaimer{text-align:center;font-size:10px;color:#9a9098;line-height:1.6;margin-top:16px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<section id="start" class="card">
+<div class="startbox">
+<div class="heart">💗</div>
+<h1>Travis Japan<br>恋愛相性診断</h1>
+<p class="lead">10問に答えるだけ！<br>あなたと一番相性のいいTravis Japanメンバーを診断します。</p>
+<p class="small">※ファン向けのエンタメ診断です。公開情報からイメージしたキャラクター設定をもとにしたものです。</p>
+<br><button onclick="begin()">診断スタート♡</button>
+</div>
+</section>
+
+<section id="quiz" class="card hidden">
+<div class="qno" id="qno"></div><div class="progress"><div class="bar" id="bar"></div></div>
+<div class="q" id="question"></div><div class="answers" id="answers"></div>
+</section>
+
+<section id="result" class="card hidden">
+<div class="result-head"><div class="emoji">💞</div><div>あなたと一番相性がいいのは</div><h2 id="winner"></h2><div class="percent" id="percent"></div></div>
+<div class="member"><img id="photo" alt=""><div class="name" id="wname"></div><div class="desc" id="description"></div></div>
+<div class="scores" id="scores"></div>
+<div class="all"><h3>🌈 7人との相性</h3><div id="allrows"></div></div>
+<div class="actions"><button onclick="location.reload()">もう一度診断する</button></div>
+<div class="disclaimer">この診断は公式の性格診断・本人の私生活を判定するものではありません。Travis Japanのメンバーについての公開イメージをもとにしたファン向けコンテンツです。</div>
+</section>
+</div>
+
+<script>
+const members=[
+{name:"中村海人",emoji:"🩵",img:"",traits:{fun:5,comfort:5,talk:4,romance:5,steady:4}},
+{name:"宮近海斗",emoji:"❤️",img:"",traits:{fun:5,comfort:4,talk:5,romance:4,steady:5}},
+{name:"七五三掛龍也",emoji:"🩷",img:"",traits:{fun:4,comfort:5,talk:5,romance:5,steady:4}},
+{name:"川島如恵留",emoji:"🤍",img:"",traits:{fun:3,comfort:5,talk:5,romance:4,steady:5}},
+{name:"吉澤閑也",emoji:"💛",img:"",traits:{fun:5,comfort:5,talk:4,romance:4,steady:5}},
+{name:"松田元太",emoji:"💙",img:"",traits:{fun:5,comfort:3,talk:4,romance:5,steady:3}},
+{name:"松倉海斗",emoji:"🧡",img:"",traits:{fun:5,comfort:4,talk:5,romance:5,steady:4}}
+];
+
+const questions=[
+["恋人に一番求めるものは？",[
+["一緒にいてとにかく楽しい！","fun"],["何も言わなくても安心できる","comfort"],["何でも話せること","talk"],["恋愛らしいドキドキ","romance"],["誠実で安定した関係","steady"]]],
+["理想の休日デートは？",[
+["予定を詰めて遊びまくる","fun"],["お家でまったり","comfort"],["カフェでずっとおしゃべり","talk"],["ちょっと特別なデート","romance"],["ドライブやゆったりお出かけ","steady"]]],
+["好きな人にしてほしいことは？",[
+["いっぱい笑わせてほしい","fun"],["疲れたときにそばにいてほしい","comfort"],["話をちゃんと聞いてほしい","talk"],["不意にキュンとさせてほしい","romance"],["言葉と行動で安心させてほしい","steady"]]],
+["ケンカしたとき、どうしてほしい？",[
+["まず笑わせて空気を変えてほしい","fun"],["優しく落ち着かせてほしい","comfort"],["ちゃんと話し合いたい","talk"],["仲直りのきっかけを作ってほしい","romance"],["感情的にならず向き合ってほしい","steady"]]],
+["LINEが来るならどんな感じが好き？",[
+["面白い写真やノリのいいメッセージ","fun"],["『今日もお疲れさま』みたいな優しい言葉","comfort"],["長くてもいいからたくさん話す","talk"],["不意打ちの『会いたい』","romance"],["無理のないペースで安定して続く","steady"]]],
+["あなたが落ち込んでいるときは？",[
+["笑わせてもらいたい","fun"],["黙ってそばにいてほしい","comfort"],["話を聞いてほしい","talk"],["ぎゅっとしてほしい","romance"],["具体的に助けてほしい","steady"]]],
+["旅行するなら？",[
+["予定いっぱいでアクティブに！","fun"],["ホテルでのんびりする時間も欲しい","comfort"],["移動中もずっとおしゃべり","talk"],["夜景やイルミネーションなど特別感","romance"],["計画を立てて安心して楽しむ","steady"]]],
+["好きな人の好きなところは？",[
+["一緒にいると笑顔になれる","fun"],["優しくて包み込んでくれる","comfort"],["自分を理解してくれる","talk"],["色気やギャップがある","romance"],["信頼できる","steady"]]],
+["恋人とはどんな関係が理想？",[
+["親友みたいに楽しい","fun"],["家族みたいに安心できる","comfort"],["何でも共有できる","talk"],["いつまでも恋人らしくいたい","romance"],["お互いを支え合いたい","steady"]]],
+["最後に、直感で選ぶなら？",[
+["一緒に大笑いできる人","fun"],["優しく包み込んでくれる人","comfort"],["ずっと話していられる人","talk"],["ドキドキさせてくれる人","romance"],["頼れて信頼できる人","steady"]]]
+];
+
+let qi=0, scores={}; members.forEach(m=>scores[m.name]={fun:0,comfort:0,talk:0,romance:0,steady:0});
+
+function begin(){document.getElementById("start").classList.add("hidden");document.getElementById("quiz").classList.remove("hidden");showQ();}
+function showQ(){
+ const [q,ans]=questions[qi];document.getElementById("qno").textContent=`QUESTION ${qi+1} / ${questions.length}`;
+ document.getElementById("bar").style.width=((qi)/questions.length*100)+"%";
+ document.getElementById("question").textContent=q;
+ const box=document.getElementById("answers");box.innerHTML="";
+ ans.forEach(([txt,key])=>{const b=document.createElement("button");b.className="ans";b.textContent=txt;b.onclick=()=>choose(key);box.appendChild(b)});
+}
+function choose(key){
+ members.forEach(m=>{
+   const t=m.traits[key];
+   scores[m.name][key]+=t;
+ });
+ qi++;
+ if(qi<questions.length)showQ();else finish();
+}
+function finish(){
+ document.getElementById("quiz").classList.add("hidden");document.getElementById("result").classList.remove("hidden");
+ const totals=members.map(m=>{let s=0;Object.keys(scores[m.name]).forEach(k=>s+=scores[m.name][k]);return {m,s}});
+ totals.sort((a,b)=>b.s-a.s);
+ const max=questions.length*5*5;
+ const winner=totals[0].m,pct=Math.round(70+(totals[0].s-totals[6].s)/(max)*25);
+ document.getElementById("winner").textContent=winner.emoji+" "+winner.name+" "+winner.emoji;
+ document.getElementById("wname").textContent=winner.name;
+ document.getElementById("percent").textContent=pct+"%";
+ document.getElementById("description").textContent=desc(winner.name);
+ document.getElementById("photo").style.display="none";
+ const labels={fun:"楽しさ",comfort:"安心感",talk:"会話",romance:"ドキドキ",steady:"安定感"};
+ const sc=document.getElementById("scores");sc.innerHTML="";
+ Object.entries(scores[winner.name]).forEach(([k,v])=>{
+   const p=Math.round(v/(questions.length*5)*100);
+   sc.innerHTML+=`<div class="score"><b>${labels[k]}</b><div class="track"><div class="fill" style="width:${p}%"></div></div><b>${p}%</b></div>`;
+ });
+ const rows=document.getElementById("allrows");rows.innerHTML="";
+ const top=totals[0].s;
+ totals.forEach((x,i)=>{let p=Math.round(70+(x.s-totals[6].s)/(top-totals[6].s||1)*25);
+ rows.innerHTML+=`<div class="row"><div class="nm">${i+1}. ${x.m.name}</div><div class="track"><div class="fill" style="width:${p}%"></div></div><b>${p}%</b></div>`});
+}
+function desc(n){
+ const d={
+ "中村海人":"一緒にいると無理をせず自然体でいられるタイプ。楽しい時間も、何気ない安心感も大切にしたいあなたとは、肩の力を抜いて仲を深めていく関係がぴったり。ふとした優しさや距離の近さにキュンとしそう♡",
+ "宮近海斗":"笑って過ごせる楽しさと、ちゃんと向き合える安心感のバランスが魅力。友達のように仲良くなって、気づけば特別な存在になっていくタイプの相性♡",
+ "七五三掛龍也":"優しさと恋人らしいドキドキをどちらも大切にしたいあなたと好相性。甘い時間を楽しみながら、お互いを気遣える関係になりそう♡",
+ "川島如恵留":"会話を重ねながら、お互いを理解していく関係が得意なあなたと好相性。落ち着いて話せる安心感と、頼れる存在感がポイント♡",
+ "吉澤閑也":"一緒に笑える楽しさと、困ったときに支えてくれる安心感を両立したいあなたと好相性。長く付き合うほど居心地のよさを感じそう♡",
+ "松田元太":"笑って、ドキドキして、毎日がちょっと特別になるような恋が似合う相性。勢いのある楽しさの中に、不意打ちのキュンがありそう♡",
+ "松倉海斗":"たくさん話して笑って、感情も共有しながら仲を深めるタイプの相性。楽しいだけでなく、ふとした瞬間に恋人らしさを感じられそう♡"
+ };return d[n];
+}
+</script>
+</body>
+</html>
